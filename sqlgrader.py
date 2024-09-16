@@ -1158,7 +1158,7 @@ def sql_check_type_statement(type):
 ###########
 
 
-def sql_column_presence_grader(sol_cols, student_cols):
+def sql_column_presence_analyzer(sol_cols, student_cols):
     """Check whether all columns are present in the result
     :param sol_cols:
     solution columns
@@ -1216,7 +1216,7 @@ def sql_column_presence_grader(sol_cols, student_cols):
     return cols_text
 
 
-def sql_column_order_grader(sol_cols, student_cols):
+def sql_column_order_analyzer(sol_cols, student_cols):
     """Check ordering of all columns
     :param sol_cols:
     solution columns
@@ -1239,7 +1239,7 @@ def sql_column_order_grader(sol_cols, student_cols):
     return []
 
 
-def sql_row_grader(sol_rows, student_rows, sol_cols, ordering):
+def sql_row_analyzer(sol_rows, student_rows, sol_cols, ordering):
     """Serves to grade rows
     :param sol_rows:
     solution rows
@@ -1380,7 +1380,7 @@ def sql_row_grader(sol_rows, student_rows, sol_cols, ordering):
     return rows_text
 
 
-def sql_code_grader(sol_code, student_code, unimportant=None, current_user=None):
+def sql_code_analyzer(sol_code, student_code, unimportant=None, current_user=None):
     """Serves to grade the SQL code
     :param sol_code:
     SQL solution code, usually the one in the solution cell
@@ -1572,7 +1572,7 @@ def sql_select_grader(sol_code, student_code, sol_res, student_res, current_user
     # We always grade columns first. Only correctly set columns can assure the respective rows are the same.
     # First, we check whether columns are present in the result. Then we check their order.
     # We do this in this order to provide the best possible grading messages for complex or large tables.
-    cols_text = sql_column_presence_grader(sol_cols, student_cols)
+    cols_text = sql_column_presence_analyzer(sol_cols, student_cols)
 
     if cols_text:
         # Check whether there is any chance that unprocessed aggregate functions are used.
@@ -1619,7 +1619,7 @@ def sql_select_grader(sol_code, student_code, sol_res, student_res, current_user
                 return cols_text
 
     # Check the order of columns
-    cols_text = sql_column_order_grader(sol_cols, student_cols)
+    cols_text = sql_column_order_analyzer(sol_cols, student_cols)
     if cols_text:
         return cols_text
 
@@ -1628,14 +1628,14 @@ def sql_select_grader(sol_code, student_code, sol_res, student_res, current_user
     ##############
     # We are now sure we have correct columns in the result.
     ordering = "ORDER BY" in sol_code
-    validator_rows = sql_row_grader(sol_rows, student_rows, sol_cols, ordering)
+    validator_rows = sql_row_analyzer(sol_rows, student_rows, sol_cols, ordering)
     if not validator_rows:
         return []
 
     ##################
     # Grade SQL code #
     ##################
-    validator_code = sql_code_grader(
+    validator_code = sql_code_analyzer(
         sol_code_orig, student_code_orig, current_user=current_user
     )
 
@@ -1663,7 +1663,7 @@ def sql_create_or_alter_table_grader(test_tbl_cols, student_tbl_cols, table_cols
     if not student_tbl_colnames:
         return [[False, "Table was not created. "]]
 
-    cols_text = sql_column_presence_grader(test_tbl_colnames, student_tbl_colnames)
+    cols_text = sql_column_presence_analyzer(test_tbl_colnames, student_tbl_colnames)
     if cols_text:
         return cols_text
 
@@ -1710,7 +1710,7 @@ def sql_create_or_alter_table_grader(test_tbl_cols, student_tbl_cols, table_cols
         return cols_text
 
     # Check the order of columns
-    cols_text = sql_column_order_grader(test_tbl_colnames, student_tbl_colnames)
+    cols_text = sql_column_order_analyzer(test_tbl_colnames, student_tbl_colnames)
 
     return cols_text
 
@@ -1862,7 +1862,7 @@ def sql_insert_grader(
     ##############
     # We are now sure we have only relevant columns in the result.
     ordering = False
-    validator_rows = sql_row_grader(sol_rows, student_rows, sol_cols, ordering)
+    validator_rows = sql_row_analyzer(sol_rows, student_rows, sol_cols, ordering)
     if not validator_rows:
         return []
 
@@ -1871,7 +1871,7 @@ def sql_insert_grader(
     ##################
     validator_code = []
     if sol_code and student_code:
-        validator_code = sql_code_grader(sol_code, student_code)
+        validator_code = sql_code_analyzer(sol_code, student_code)
 
     return validator_rows + validator_code
 
@@ -1908,14 +1908,14 @@ def sql_delete_grader(sol_code, student_code, sol_res, student_res):
     # Grade ROWS #
     ##############
     ordering = "ORDER BY" in sol_code
-    validator_rows = sql_row_grader(sol_rows, student_rows, sol_cols, ordering)
+    validator_rows = sql_row_analyzer(sol_rows, student_rows, sol_cols, ordering)
     if not validator_rows:
         return []
 
     ##################
     # Grade SQL code #
     ##################
-    validator_code = sql_code_grader(sol_code_orig, student_code_orig)
+    validator_code = sql_code_analyzer(sol_code_orig, student_code_orig)
 
     return validator_rows + validator_code
 
@@ -2027,11 +2027,11 @@ def sql_function_tests_grader(results, sol_fcn_src, student_fcn_src, sol_fcn):
             % (sol_fcn, str(problem[0] if problem[0] else ""))
         )
         messages = []
-        validator = sql_row_grader(problem[2], problem[1], problem[3], True)
+        validator = sql_row_analyzer(problem[2], problem[1], problem[3], True)
         if validator:
             validator[0][1] = problem_message + validator[0][1]
             messages += validator
-        validator = sql_code_grader(sol_fcn_src, student_fcn_src)
+        validator = sql_code_analyzer(sol_fcn_src, student_fcn_src)
         if validator:
             messages += validator
 
