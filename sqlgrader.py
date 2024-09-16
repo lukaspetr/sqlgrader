@@ -1614,7 +1614,7 @@ def sql_select_grader(sol_code, student_code, sol_res, student_res, current_user
                 )
 
             if cols_text_agg:
-                return cols_text + [False, cols_text_agg]
+                return cols_text + [[False, cols_text_agg]]
             else:
                 return cols_text
 
